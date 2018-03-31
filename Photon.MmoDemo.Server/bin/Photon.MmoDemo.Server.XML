@@ -1,0 +1,758 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Photon.MmoDemo.Server</name>
+    </assembly>
+    <members>
+        <member name="T:Photon.MmoDemo.Server.ClientInterestArea">
+            <summary>
+            This InterestArea subclass automatically subscribes to the region.ItemEventChannel
+            of every region in focus and forwards item events to the PeerBase.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.ClientInterestArea.OnRegionEnter(Photon.MmoDemo.Server.Region)">
+            <summary>
+            Subscrives entered region.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.ClientInterestArea.OnRegionExit(Photon.MmoDemo.Server.Region)">
+            <summary>
+            Unsubscribe exited region.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.ClientInterestArea.Region_OnItemEvent(Photon.MmoDemo.Server.ItemEventMessage)">
+            <summary>
+            Event relayed by subscribed region from region's items.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.ClientInterestArea.OnItemEnter(Photon.MmoDemo.Server.ItemSnapshot)">
+            <summary>
+            Notifies peer about Item entered area.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.ClientInterestArea.OnItemExit(Photon.MmoDemo.Server.Item)">
+            <summary>
+            Notifies peer about item exited area.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.CounterOperations">
+            <summary>
+            Handles the operations SubscribeCounter and UnsubscribeCounter.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.CounterOperations.UnsubscribeCounter(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest)">
+            <summary>
+            The client stops receiving counter updates from the PhotonApplication.CounterPublisher.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Events.CounterDataEvent">
+            <summary>
+            Clients receive this event after executing operation SubscribeCounter.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Events.ItemDestroyed">
+            <summary>
+            Client receive this event after executing operation DestroyItem.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Events.ItemGeneric">
+            <summary>
+            Clients receive this event after executing operation RaiseGenericEvent/>.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Events.ItemMoved">
+            <summary>
+            Clients receive this event after executing operation Move.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Events.ItemProperties">
+            <summary>
+            The client receives this event after executing operation GetProperties.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Events.ItemPropertiesSet">
+            <summary>
+            Clients receive this event after executing operation SetProperties.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Events.ItemSubscribed">
+            <summary>
+            Client receives this event when an item enters interest an area.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Events.ItemUnsubscribed">
+            <summary>
+            Client receive this event when an item exits an interest area.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Events.RadarUpdate">
+            <summary>
+            Clients receive this event frequently after executing operation RadarSubscribe.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Events.WorldExited">
+            <summary>
+            Clients receive this event after exiting a world, 
+            either because of operation ExitWorld or 
+            because another client with the same username executes operation EnterWorld. 
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.GridWorld">
+            <summary>
+            Grid used to divide the world.
+            It contains Regions.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.InterestArea">
+            <summary>
+            Subscribes to regions in the area. Each region relays events of items in region.
+            Thread safety: All instance members require a lock on SyncRoot.
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.InterestArea.ViewDistanceEnter">
+            <summary>
+            Gets or sets the inner view distance (the item subscribe threshold).
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.InterestArea.ViewDistanceExit">
+            <summary>
+            Gets or sets the outer view distance (the item unsubscribe threshold).
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.InterestArea.AttachToItem(Photon.MmoDemo.Server.Item)">
+            <summary>
+            Attaching an Item to the InterestArea automatically updates the InterestArea's Position when the Item moves.
+            </summary>
+            <remarks>
+            Detach the item with Detach.
+            Thread safety: Requires enqueuing on the item's Item.Fiber and like all instance members a lock on SyncRoot.
+            </remarks>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.InterestArea.Detach">
+            <summary>
+            Detaches the InterestArea from an Item that was attached with AttachToItem.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.InterestArea.UpdateInterestManagement">
+            <summary>
+            Updates the Region subscriptions that are used to detect Items in the nearby World.
+            This method should be called after changing the InterestArea's Position.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.InterestArea.Dispose(System.Boolean)">
+            <summary>
+            Disposes the fiber used to manage the subscriptions, detaches any attached item and resolves all existing channel subscriptions.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.InterestArea.OnRegionEnter(Photon.MmoDemo.Server.Region)">
+            <summary>
+            Region enters area.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.InterestArea.OnRegionExit(Photon.MmoDemo.Server.Region)">
+            <summary>
+            Region exits area.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.InterestArea.OnItemEnter(Photon.MmoDemo.Server.ItemSnapshot)">
+            <summary>
+            Item enters area
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.InterestArea.OnItemExit(Photon.MmoDemo.Server.Item)">
+            <summary>
+            Item exits area
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.InterestItems">
+            <summary>
+            Maintains subscriptions per item (manual).
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.InterestItems.SubscribeItem(Photon.MmoDemo.Server.Item)">
+            <summary>
+            Subscribes an Item manually. 
+            </summary>
+            <remarks>
+            Unsubscribe with UnsubscribeItem.
+            Thread safety: Requires enqueuing on the item's Item.Fiber and like all instance members a lock on SyncRoot.
+            </remarks>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.InterestItems.UnsubscribeItem(Photon.MmoDemo.Server.Item)">
+            <summary>
+            Unsubscribe an Item that was manually subscribed with SubscribeItem.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.ItemSnapshot">
+            <summary>
+            Copy of current Item's state
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Item">
+            <summary>
+            Represents an entity in a world. 
+            </summary>
+            <remarks>
+            Items are event publisher and the counterpart to InterestAreas.
+            </remarks>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Item.UpdateInterestManagement">
+            <summary>
+            Publishes a ItemPositionMessage in the PositionUpdateChannel
+            Subscribes and unsubscribes regions if changed. 
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Item.SetProperties(System.Collections.Hashtable,System.Collections.ArrayList)">
+            <summary>
+            Updates the Properties and increments the PropertiesRevision.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Item.GetItemSnapshot">
+            <summary>
+            Creates an ItemSnapshot with a snapshot of the current attributes.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Item.GetPositionUpdateMessage(Photon.MmoDemo.Common.Vector)">
+            <summary>
+            Creates an ItemPositionMessage with the current position.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Item.Dispose(System.Boolean)">
+            <summary>
+            Publishes a ItemDisposedMessage through the DisposeChannel and disposes all channels.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Item.OnDestroy">
+            <summary>
+            Publishes event ItemDestroyed in the Item.EventChannel.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Item.Move(Photon.MmoDemo.Common.Vector)">
+            <summary>
+            Moves the item.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Item.Spawn(Photon.MmoDemo.Common.Vector)">
+            <summary>
+            Spawns the item.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Item.GrantWriteAccess(Photon.MmoDemo.Server.MmoActorOperationHandler)">
+            <summary>
+            Checks wheter the actor is allowed to change the item.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.ItemCache">
+            <summary>
+            A cache for items. Each World has one item cache.
+            </summary>
+            <remarks>
+            It uses an ReaderWriterLockSlim to ensure thread safety.
+            All members are thread safe.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.ItemDisposedMessage">
+            <summary>
+            This type of message is pubished by items sent through the item Item.DisposeChannel. 
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.ItemEventMessage">
+            <summary>
+            This message type contains EventData to be sent to clients.
+            ItemEventMessages are published through the item Item.EventChannel.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.ItemPositionMessage">
+            <summary>
+            This message contains the current position of the Item. 
+            This type of message is published by items through the Item.PositionUpdateChannel. 
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.MessageCounters">
+            <summary>
+            Counters that keep track of the amount of messages sent and received from item channels.
+            </summary>
+        </member>
+        <member name="F:Photon.MmoDemo.Server.MessageCounters.CounterReceive">
+            <summary>
+            Used to count how many messages were received by InterestAreas (and sometimes items).
+            </summary>
+        </member>
+        <member name="F:Photon.MmoDemo.Server.MessageCounters.CounterSend">
+            <summary>
+            Used to count how many messages were sent by items (and sometimes InterestAreas).
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.MethodReturnValue">
+            <summary>
+            Сombines an error code with a debug message. 
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.MmoActor">
+            <summary>
+            Represents a player in a world. 
+            </summary>
+            <remarks>
+            An actor can receive events using InterestAreas and publish events using items.
+            InterestAreas and items can be added, removed and moved within the world.
+            </remarks>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.MmoActor.World">
+            <summary>
+            Gets the world the actor is member of.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActor.Dispose(System.Boolean)">
+            <summary>
+            Disposes the InterestAreas and destroys all owned items.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.MmoActorOperationHandler">
+            <summary>
+            Сlient's Peer.CurrentOperationHandler after entering a world.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.InvalidOperation(Photon.SocketServer.OperationRequest)">
+            <summary>
+            Handles operations CreateWorld and EnterWorld.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationAddInterestArea(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Handles operation AddInterestArea: Creates a new InterestArea and optionally attaches it to an existing Item.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationAttachInterestArea(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Handles operation AttachInterestArea: Attaches an existing InterestArea to an existing Item.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationDestroyItem(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Handles operation DestroyItem: Destroys an existing Item. 
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationDetachInterestArea(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest)">
+            <summary>
+            Handles operation DetachInterestArea: Detaches an existing InterestArea from an Item.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationExitWorld(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest)">
+            <summary>
+            Handles operation ExitWorld: Sends event WorldExited to the client, disposes the actor and replaces the peer's Peer.CurrentOperationHandler with the MmoPeer itself.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationGetProperties(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Handles operation GetProperties: Sends event ItemProperties to the client.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationMove(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Handles operation Move: Move the items and ultimately sends event ItemMoved to other clients.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationMoveInterestArea(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest)">
+            <summary>
+            Handles operation MoveInterestArea: Moves one of the actor's InterestArea.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationRemoveInterestArea(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest)">
+            <summary>
+            Handles operation RemoveInterestArea: Removes one of the actor's InterestAreas.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationSetProperties(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Handles operation SetProperties: Sets the Item.Properties of an Item and ultimately sends event ItemPropertiesSet to other clients.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationSetViewDistance(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest)">
+            <summary>
+            Handles operation SetViewDistance: Changes the subscribe and unsubscribe radius for an InterestArea.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationSpawnItem(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest)">
+            <summary>
+            Handles operation SpawnItem: Creates a new Item and optionally subscribes an InterestArea to it.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationSubscribeItem(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Handles operation SubscribeItem: Manually subscribes item (does not affect interest area updates).
+            The client receives event ItemSubscribed on success.
+            </summary>
+            <remarks>        
+            If the submitted SubscribeItem.PropertiesRevision is null or smaller than the item Item.PropertiesRevision event ItemProperties is sent to the client.        
+            </remarks>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationUnsubscribeItem(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Handles operation UnsubscribeItem: manually unsubscribes an existing InterestArea from an existing Item.
+            The client receives event ItemUnsubscribed on success.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OperationRaiseGenericEvent(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+              Handles operation RaiseGenericEvent. Sends event ItemGeneric to an Item owner or the subscribers of an Item />.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OnDisconnect(Photon.SocketServer.PeerBase)">
+            <summary>
+            Disposes the actor, stops any further operation handling and disposes the Peer.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.OnDisconnectByOtherPeer(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Kicks the actor from the world (event WorldExited is sent to the client) and then disconnects the client.
+            </summary>
+            <remarks>
+            Called by DisconnectByOtherPeer after being enqueued to the PeerBase.RequestFiber.
+            It kicks the actor from the world (event WorldExited) and then continues the original request by calling the original peer's OnOperationRequest method.        
+            </remarks>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.DisconnectByOtherPeer(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Enqueues OnDisconnectByOtherPeer to the PeerBase.RequestFiber.
+            </summary>
+            <remarks>
+            This method is intended to be used to disconnect a user's peer if he connects with multiple clients while the application logic wants to allow just one.
+            </remarks>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoActorOperationHandler.ExecItemOperation(System.Func{Photon.SocketServer.OperationResponse},Photon.SocketServer.SendParameters)">
+            <summary>
+            Executes an item operation and returns an error response in case an exception occurs.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.MmoInitialOperationHandler">
+            <summary>
+            Сlient's Peer.CurrentOperationHandler immediately after connecting.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoInitialOperationHandler.InvalidOperation(Photon.SocketServer.OperationRequest)">
+            <summary>
+            Handles all operations that are not allowed before operation EnterWorld is called.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoInitialOperationHandler.OperationRadarSubscribe(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Expects operation RadarSubscribe and subscribes the peer to the Radar.
+            Publishes an OperationResponse with error code ReturnCode.Ok if successful.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoInitialOperationHandler.OperationCreateWorld(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest)">
+            <summary>
+            Expects operation CreateWorld and adds a new World to the WorldCache.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoInitialOperationHandler.OperationEnterWorld(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            Expects operation EnterWorld and creates a new MmoActor with a new Item as avatar and a new MmoClientInterestArea. 
+            </summary>
+            <remarks>
+            The MmoActor becomes the new Peer.CurrentOperationHandler.
+            If another MmoActor with the same name exists he is disconnected.
+            An OperationResponse with error code ReturnCode.Ok is published on success.
+            </remarks>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoInitialOperationHandler.OnDisconnect(Photon.SocketServer.PeerBase)">
+            <summary>
+            IOperationHandler implementation.
+            Stops any further operation handling and disposes the peer's resources.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoInitialOperationHandler.OnDisconnectByOtherPeer(Photon.SocketServer.PeerBase)">
+            <summary>
+            IOperationHandler implementation.
+            Disconnects the peer.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.MmoInitialOperationHandler.OnOperationRequest(Photon.SocketServer.PeerBase,Photon.SocketServer.OperationRequest,Photon.SocketServer.SendParameters)">
+            <summary>
+            IOperationHandler implementation.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.MmoPeer">
+            <summary>
+            Photon Peer.
+            </summary>
+            <remarks>
+            Keeps references to the optional Radar and CounterPublisher subscription.
+            </remarks>
+        </member>
+        <!-- Badly formed XML comment ignored for member "P:Photon.MmoDemo.Server.MmoPeer.CounterSubscription" -->
+        <member name="P:Photon.MmoDemo.Server.MmoPeer.RadarSubscription">
+            <summary>
+            The radar is subscribed with operation RadarSubscribe.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.AddInterestArea">
+            <summary>
+            The operation adds client's InterestArea.
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.AttachInterestArea">
+            <summary>
+            The operation attaches InterestArea to an Item.
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.CreateWorld">
+            <summary>
+            The operation creates new world.
+            </summary>
+            <remarks>
+            This operation is allowed BEFORE having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.DestroyItem">
+            <summary>
+            The operation destroys Item.
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.DetachInterestArea">
+            <summary>
+            The operation detaches InterestArea from an Item.
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.EnterWorld">
+            <summary>
+            The operation enters client into world.
+            </summary>
+            <remarks>
+            This operation is allowed BEFORE having entered an World with operation EnterWorld or AFTER having exited it with operaiton ExitWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.GetProperties">
+            <summary>
+            The operation requests Item properties.
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            This is usually the first operation to call after reiveing event ItemSubscribed with an unknown properties revision.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.Move">
+            <summary>
+            The operation moves an Item. 
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.MoveInterestArea">
+            <summary>
+            The operation moves an InterestArea. 
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.RadarSubscribe">
+            <summary>
+            This operation subscribes to Radar. It can be executed any time.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.RaiseGenericEvent">
+            <summary>
+            This operation raises generic item event.
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.Operations.RaiseGenericEvent.CustomEventCode">
+            <summary>
+            Gets or sets the custom event code.
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.Operations.RaiseGenericEvent.EventData">
+            <summary>
+            Gets or sets the optional event content.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.RemoveInterestArea">
+            <summary>
+            The operation removes client's InterestArea.
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.SetProperties">
+            <summary>
+            The operation sets the properties of an Item. 
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.SetViewDistance">
+            <summary>
+            The oeration sets view distsance for InterstArea.
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.SpawnItem">
+            <summary>
+            The operation creates a new Item. 
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.SubscribeCounter">
+            <summary>
+            The operation subscribes to the PhotonApplication.CounterPublisher. It can be executed any time.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.SubscribeItem">
+            <summary>
+            The operation subscribes an InterestArea to an Item.EventChannel.
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Operations.UnsubscribeItem">
+            <summary>
+            The operation unsubscribes an InterestArea from an Item.EventChannel after.
+            </summary>
+            <remarks>
+            This operation is allowed AFTER having entered a World with operation EnterWorld.
+            </remarks>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.PhotonApplication">
+            <summary>
+            This ApplicationBase subclass creates MmoPeer and has a CounterSamplePublisher that is used to send diagnostic values to the client.
+            </summary>
+        </member>
+        <member name="F:Photon.MmoDemo.Server.PhotonApplication.CounterPublisher">
+            <summary>
+            Used to publish diagnostic counters.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.PhotonApplication.AppDomain_OnUnhandledException(System.Object,System.UnhandledExceptionEventArgs)">
+            <summary>
+            Logs unhandled exceptions.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Radar">
+            <summary>
+            Subscribers of the Radar's Channel receive event RadarUpdate for all moving Items in the World.
+            The receive interval is configured with Settings.RadarUpdateInterval.
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.Radar.Channel">
+            <summary>
+            Gets the channel that publishes event RadarUpdate.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Radar.AddItem(Photon.MmoDemo.Server.Item,Photon.MmoDemo.Common.Vector)">
+            <summary>
+            Registers an Item with the radar.
+            </summary>
+            <remarks>
+            The radar will receive position changes from the item and publish them with his Channel.
+            The publish interval can be configured with Settings.RadarUpdateInterval.
+            </remarks>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Radar.SendContentToPeer(Photon.MmoDemo.Server.MmoPeer)">
+            <summary>
+            Send event RadarUpdate for all registered Items to the peer.
+            </summary>
+        </member>
+        <member name="M:Photon.MmoDemo.Server.Radar.Dispose">
+            <summary>
+            Disposes the fiber and clears all subscriptions and dictionaries.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.ItemRegionChangedMessage">
+            <summary>
+            Item notifies interest areas via regions this item exits and enters.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.RequestItemEnterMessage">
+            <summary>
+            Interest area requests all items in entered region.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.RequestItemExitMessage">
+            <summary>
+            Interest area requests all items in exited region.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Region">
+            <summary>
+            Represents a region used for region-based interest management. 
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.Settings">
+            <summary>
+            The settings.
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.Settings.DiagnosticsEventChannel">
+            <summary>
+            This property determines which enet channel to use when sending event CounterDataEvent to the client.
+            Default value is #2.
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.Settings.DiagnosticsEventReliability">
+            <summary>
+            Determines if event CounterDataEvent is sent reliable or unreliable to the client.
+            Defaut value is Reliability.Reliable.
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.Settings.ItemAutoUnsubcribeDelay">
+            <summary>
+            Maximum unsubscribe delay of items that leave the outer view threshold.
+            Default value is 5 seconds.
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.Settings.ItemEventChannel">
+            <summary>
+            The enet channel used for events that are published with the Item.EventChannel.
+            Default value is 0.
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.Settings.MaxLockWaitTimeMilliseconds">
+            <summary>
+            Maxium lock wait time for the lock protected dictionaries WorldCache.
+            Default is 1 second.
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.Settings.RadarEventChannel">
+            <summary>
+            The enet channel used for event that are published with the Radar.
+            Default is 2.
+            </summary>
+        </member>
+        <member name="P:Photon.MmoDemo.Server.Settings.RadarUpdateInterval">
+            <summary>
+            The interval the Radar uses to publish position changes with a RadarUpdate event.
+            Default is 10 seconds.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.World">
+            <summary>
+            GridWorld with name, item cache and radar.
+            </summary>
+        </member>
+        <member name="T:Photon.MmoDemo.Server.WorldCache">
+            <summary>
+            This is a cache for Worlds that have a unique name.
+            </summary>
+        </member>
+    </members>
+</doc>

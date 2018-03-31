@@ -1,0 +1,9 @@
+C:\Users\geosohal\Documents\AsterarkMisc\photon4\deploy\MmoDemo\bin\log4net.config
+C:\Users\geosohal\Documents\AsterarkMisc\photon4\deploy\MmoDemo\bin\Photon.MmoDemo.Server.dll
+C:\Users\geosohal\Documents\AsterarkMisc\photon4\deploy\MmoDemo\bin\Photon.MmoDemo.Server.pdb
+C:\Users\geosohal\Documents\AsterarkMisc\photon4\deploy\MmoDemo\bin\Photon.MmoDemo.Server.XML
+C:\Users\geosohal\Documents\AsterarkMisc\photon4\src-server\Mmo\Photon.MmoDemo.Server\obj\Release\Photon.MmoDemo.Server.csprojResolveAssemblyReference.cache
+C:\Users\geosohal\Documents\AsterarkMisc\photon4\src-server\Mmo\Photon.MmoDemo.Server\obj\Release\Photon.MmoDemo.Server.csproj.CoreCompileInputs.cache
+C:\Users\geosohal\Documents\AsterarkMisc\photon4\src-server\Mmo\Photon.MmoDemo.Server\obj\Release\Photon.MmoDemo.Server.csproj.CopyComplete
+C:\Users\geosohal\Documents\AsterarkMisc\photon4\src-server\Mmo\Photon.MmoDemo.Server\obj\Release\Photon.MmoDemo.Server.dll
+C:\Users\geosohal\Documents\AsterarkMisc\photon4\src-server\Mmo\Photon.MmoDemo.Server\obj\Release\Photon.MmoDemo.Server.pdb
